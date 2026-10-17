@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Entrar</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="login">
+  <main class="login">
+    <form id="login-form" novalidate>
+      <h1>Entrar</h1>
+      <div class="field">
+        <label for="email">E-mail</label>
+        <input id="email" name="email" type="email" autocomplete="username" required autofocus>
+      </div>
+      <div class="field">
+        <label for="password">Senha</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required>
+      </div>
+      <p class="error" id="login-error" role="alert"></p>
+      <button class="primary" id="login-btn" type="submit">Entrar</button>
+    </form>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

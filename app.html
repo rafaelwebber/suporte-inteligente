@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Painel</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="app">
+  <div class="layout">
+    <aside class="sidebar" aria-label="Menu lateral">
+      <nav class="side-nav">
+        <button type="button" data-home class="active">
+          <svg viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16zM13 7l4 4"/></svg>Qual sua dúvida?
+        </button>
+        <button type="button" data-view="tickets">
+          <svg viewBox="0 0 24 24"><path d="M4 7a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 000 4v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2a2 2 0 000-4z"/></svg>Tickets
+        </button>
+        <button type="button" data-new="ticket">
+          <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Novo ticket
+        </button>
+
+        <p class="side-label" data-admin>Administração</p>
+        <button type="button" data-view="users" data-admin>
+          <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16 4.8a3.5 3.5 0 010 6.4M18 14.4c2 .7 3.5 2.4 3.5 5.6"/></svg>Usuários
+        </button>
+        <button type="button" data-view="teams" data-admin>
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Equipes
+        </button>
+        <button type="button" data-new="import" data-admin>
+          <svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M4 19h16"/></svg>Importar tickets
+        </button>
+        <button type="button" data-view="stats" data-admin>
+          <svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Estatísticas
+        </button>
+        <button type="button" data-view="audit" data-admin>
+          <svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"/></svg>Auditoria
+        </button>
+
+        <p class="side-label">Conta</p>
+        <button type="button" data-new="account">
+          <svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>Alterar senha
+        </button>
+      </nav>
+    </aside>
+
+    <div class="content">
+      <header class="top">
+        <button class="icon" id="nav-toggle" type="button" aria-label="Abrir menu"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+        <span class="who" id="who"></span>
+        <button class="ghost" id="logout" type="button">Sair</button>
+      </header>
+
+      <main class="stage" id="stage">
+        <h1>Qual sua dúvida?</h1>
+
+        <div class="bar-wrap">
+          <form class="bar" id="ask-form">
+            <button class="icon" id="plus" type="button" aria-label="Criar novo" aria-haspopup="menu" aria-expanded="false">
+              <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+            <input id="q" type="search" placeholder="Descreva o problema do cliente" autocomplete="off" aria-label="Problema do cliente">
+            <button class="send" id="send" type="submit" aria-label="Buscar soluções">
+              <svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
+            </button>
+          </form>
+          <div class="menu" id="menu" role="menu" hidden>
+            <button type="button" role="menuitem" data-new="ticket">Novo ticket</button>
+            <button type="button" role="menuitem" data-new="user" data-admin>Cadastrar usuário</button>
+            <button type="button" role="menuitem" data-new="team" data-admin>Criar equipe</button>
+            <button type="button" role="menuitem" data-new="import" data-admin>Importar tickets (CSV)</button>
+          </div>
+        </div>
+
+        <section class="results" id="results" aria-live="polite" hidden></section>
+
+        <nav class="shortcuts" id="shortcuts" aria-label="Seções">
+          <button type="button" data-view="tickets">
+            <svg viewBox="0 0 24 24"><path d="M4 7a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 000 4v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2a2 2 0 000-4z"/></svg>
+            Ver tickets da minha equipe
+          </button>
+          <button type="button" data-new="ticket">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            Registrar novo ticket
+          </button>
+        </nav>
+
+        <section class="panel" id="panel" hidden>
+          <div class="panel-head">
+            <h2 id="panel-title"></h2>
+            <div class="panel-tools">
+              <select id="status-filter" aria-label="Filtrar por status" hidden>
+                <option value="">Todos os status</option>
+                <option value="open">Abertos</option>
+                <option value="in_progress">Em andamento</option>
+                <option value="resolved">Resolvidos</option>
+              </select>
+              <input id="filter" type="search" placeholder="Filtrar" autocomplete="off" aria-label="Filtrar lista">
+              <button class="ghost" id="back" type="button">Voltar</button>
+            </div>
+          </div>
+          <div id="panel-body"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <dialog id="dlg-user">
+    <form method="dialog" id="form-user">
+      <h3 id="user-title">Cadastrar usuário</h3>
+      <div class="field"><label for="u-name">Nome completo</label><input id="u-name" name="full_name" autocomplete="off"></div>
+      <div class="field" data-create-only><label for="u-email">E-mail</label><input id="u-email" name="email" type="email" required autocomplete="off"></div>
+      <div class="field" data-create-only><label for="u-pass">Senha</label><input id="u-pass" name="password" type="password" minlength="8" required autocomplete="new-password"></div>
+      <div class="field"><label for="u-team">Equipe</label><select id="u-team" name="team_id" required></select></div>
+      <div class="field"><label for="u-role">Perfil de acesso</label>
+        <select id="u-role" name="role"><option value="agent">Atendente</option><option value="admin">Administrador</option></select>
+      </div>
+      <p class="error" id="user-error" role="alert"></p>
+      <div class="actions">
+        <button class="ghost" type="button" data-close>Cancelar</button>
+        <button class="primary" type="submit">Salvar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dlg-team">
+    <form method="dialog" id="form-team">
+      <h3 id="team-title">Criar equipe</h3>
+      <div class="field"><label for="t-name">Nome da equipe</label><input id="t-name" name="name" required autocomplete="off"></div>
+      <p class="error" id="team-error" role="alert"></p>
+      <div class="actions">
+        <button class="ghost" type="button" data-close>Cancelar</button>
+        <button class="primary" type="submit">Salvar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dlg-ticket" class="wide">
+    <form method="dialog" id="form-ticket">
+      <h3 id="ticket-title">Novo ticket</h3>
+      <div class="field"><label for="k-title">Título</label><input id="k-title" name="title" required autocomplete="off"></div>
+      <div class="field"><label for="k-desc">Descrição do problema</label><textarea id="k-desc" name="description" rows="4" required></textarea></div>
+      <div class="row">
+        <div class="field"><label for="k-cat">Categoria</label><input id="k-cat" name="category" autocomplete="off"></div>
+        <div class="field"><label for="k-prod">Produto / sistema</label><input id="k-prod" name="product" autocomplete="off"></div>
+      </div>
+      <div class="field"><label for="k-tags">Tags (separadas por vírgula)</label><input id="k-tags" name="tags" autocomplete="off"></div>
+      <div class="row">
+        <div class="field"><label for="k-status">Status</label>
+          <select id="k-status" name="status"><option value="open">Aberto</option><option value="in_progress">Em andamento</option><option value="resolved">Resolvido</option></select>
+        </div>
+        <div class="field"><label for="k-sat">Nota do cliente (1 a 5)</label>
+          <select id="k-sat" name="satisfaction"><option value="">Sem nota</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+        </div>
+        <div class="field" data-admin><label for="k-team">Equipe</label><select id="k-team" name="team_id"></select></div>
+      </div>
+      <div class="field"><label for="k-res">Solução aplicada</label><textarea id="k-res" name="resolution" rows="4"></textarea></div>
+      <p class="hint">Dados pessoais (e-mail, CPF, CNPJ, telefone, cartão) são mascarados automaticamente ao salvar.</p>
+      <p class="error" id="ticket-error" role="alert"></p>
+      <div class="actions">
+        <button class="ghost" type="button" data-close>Cancelar</button>
+        <button class="primary" type="submit">Salvar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dlg-view" class="wide">
+    <div class="view">
+      <h3 id="view-title"></h3>
+      <div id="view-body"></div>
+      <div class="actions">
+        <button class="del" type="button" id="view-delete" data-admin>Excluir</button>
+        <button class="ghost" type="button" data-close>Fechar</button>
+        <button class="primary" type="button" id="view-edit">Editar</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="dlg-password">
+    <form method="dialog" id="form-password">
+      <h3>Redefinir senha</h3>
+      <p class="hint" id="password-who"></p>
+      <div class="field"><label for="p-new">Nova senha</label><input id="p-new" name="password" type="password" minlength="8" required autocomplete="new-password"></div>
+      <p class="error" id="password-error" role="alert"></p>
+      <div class="actions">
+        <button class="ghost" type="button" data-close>Cancelar</button>
+        <button class="primary" type="submit">Redefinir</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dlg-account">
+    <form method="dialog" id="form-account">
+      <h3>Alterar minha senha</h3>
+      <div class="field"><label for="a-cur">Senha atual</label><input id="a-cur" name="current_password" type="password" required autocomplete="current-password"></div>
+      <div class="field"><label for="a-new">Nova senha</label><input id="a-new" name="new_password" type="password" minlength="8" required autocomplete="new-password"></div>
+      <div class="field"><label for="a-conf">Confirmar nova senha</label><input id="a-conf" name="confirm" type="password" minlength="8" required autocomplete="new-password"></div>
+      <p class="error" id="account-error" role="alert"></p>
+      <div class="actions">
+        <button class="ghost" type="button" data-close>Cancelar</button>
+        <button class="primary" type="submit">Alterar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dlg-import">
+    <form method="dialog" id="form-import">
+      <h3>Importar tickets (CSV)</h3>
+      <p class="hint">Colunas obrigatórias: <b>titulo</b> e <b>descricao</b>. Opcionais: id_externo, categoria, produto, tags, equipe, status, solucao, nota, reaberturas, aberto_em, resolvido_em. Linhas com o mesmo id_externo são atualizadas em vez de duplicadas.</p>
+      <div class="field"><label for="i-file">Arquivo</label><input id="i-file" name="file" type="file" accept=".csv,text/csv" required></div>
+      <div class="field"><label for="i-team">Equipe padrão (quando a coluna equipe estiver vazia ou não existir)</label><select id="i-team" name="team_id" required></select></div>
+      <p class="error" id="import-error" role="alert"></p>
+      <div id="import-result"></div>
+      <div class="actions">
+        <button class="ghost" type="button" data-close>Fechar</button>
+        <button class="primary" type="submit" id="import-btn">Importar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+  <script src="app.js"></script>
+</body>
+</html>
