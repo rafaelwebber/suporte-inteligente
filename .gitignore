@@ -1,0 +1,13 @@
+.env
+firebase-credentials.json
+*-firebase-adminsdk-*.json
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.idea/
+.vscode/
+*.egg-info/
+dist/
+build/
