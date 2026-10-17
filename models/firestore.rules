@@ -1,0 +1,22 @@
+// Regras do Firestore: cole em Firestore Database > Regras e publique.
+// Todo acesso é feito pela API Flask via Admin SDK (que ignora estas regras);
+// clientes (navegador) não podem ler nem gravar nada diretamente.
+//
+// Coleções usadas pela API:
+//   teams/{autoId}               name, created_by, created_at, updated_at
+//   profiles/{uid do Auth}       email, full_name, team_id, role (admin|agent), disabled, created_at, updated_at
+//   tickets/{autoId|imp-hash}    title, description, category, product, tags, team_id, status (open|in_progress|resolved),
+//                                resolution, satisfaction (1-5), reopen_count, successful, keywords, title_keywords,
+//                                helpful_count, not_helpful_count, source (manual|import), external_id,
+//                                created_by, created_at, updated_at, resolved_by, resolved_at
+//   suggestion_queries/{autoId}  user_id, team_id, query, terms, results, feedback, has_feedback, helpful, created_at
+//   audit_logs/{autoId}          actor_id, action, resource_type, resource_id, details, ip_address, created_at
+//   login_attempts/{id}          identifier, failed_count, locked_until, updated_at
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
