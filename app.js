@@ -2,6 +2,27 @@
 const API_URL = location.port === "5000" ? location.origin : "http://localhost:5000";
 
 const $ = (s, r = document) => r.querySelector(s);
+
+/* ---------------- Tema claro / escuro ---------------- */
+const theme = {
+  get() {
+    const saved = localStorage.getItem("theme");
+    if (saved === "light" || saved === "dark") return saved;
+    return matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+  },
+  apply(name) {
+    const next = name === "light" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    localStorage.setItem("theme", next);
+    const btn = $("#theme-toggle");
+    if (btn) btn.setAttribute("aria-label", next === "light" ? "Mudar para tema escuro" : "Mudar para tema claro");
+  },
+  toggle() { theme.apply(theme.get() === "light" ? "dark" : "light"); },
+};
+theme.apply(theme.get());
+document.addEventListener("click", (e) => {
+  if (e.target.closest("#theme-toggle")) theme.toggle();
+});
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const fmtDate = (v) => (v ? new Date(v).toLocaleString("pt-BR") : "—");
 

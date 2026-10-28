@@ -7,6 +7,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from api.config import DEFAULT_SECRET_KEY, Config
 
 FRONTEND_DIR = Path(__file__).resolve().parent.parent
+ASSETS_DIR = FRONTEND_DIR / "assets"
 FRONTEND_FILES = {"index.html", "app.html", "app.js", "style.css"}
 
 
@@ -47,6 +48,13 @@ def create_app() -> Flask:
     @app.get("/")
     def frontend_index():
         return send_from_directory(FRONTEND_DIR, "index.html")
+
+    @app.get("/assets/<path:filename>")
+    def frontend_asset(filename: str):
+        target = (ASSETS_DIR / filename).resolve()
+        if not str(target).startswith(str(ASSETS_DIR.resolve()) + "/") or not target.is_file():
+            abort(404)
+        return send_from_directory(ASSETS_DIR, filename)
 
     @app.get("/<path:filename>")
     def frontend_file(filename: str):
