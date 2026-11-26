@@ -25,6 +25,15 @@ def _team_summary(team_id: str | None, cache: dict[str, Any] | None = None) -> d
     return summary
 
 
+def _team_is_active(team) -> bool:
+    """Equipes sem o campo "active" contam como ativas.
+
+    DocumentSnapshot.get() aceita só o nome do campo e não aceita valor padrão,
+    por isso o documento é convertido em dicionário antes.
+    """
+    return (team.to_dict() or {}).get("active", True) is not False
+
+
 def _with_defaults(profile: dict[str, Any]) -> dict[str, Any]:
     profile.setdefault("role", ROLE_AGENT)
     profile.setdefault("disabled", False)
@@ -79,7 +88,7 @@ def create_user(
     team = get_doc("teams", team_id)
     if not team:
         return None, "Equipe n\u00e3o encontrada.", 404
-    if team.get("active", True) is False:
+    if not _team_is_active(team):
         return None, "N\u00e3o \u00e9 poss\u00edvel cadastrar usu\u00e1rio em equipe desativada.", 409
 
     auth = get_auth()
@@ -134,6 +143,7 @@ def update_user(
     existing = get_doc("profiles", user_id)
     if not existing:
         return None, "Usuário não encontrado.", 404
+    current = existing.to_dict() or {}
 
     updates: dict[str, Any] = {}
     if "full_name" in changes:
@@ -142,13 +152,13 @@ def update_user(
         team = get_doc("teams", changes["team_id"])
         if not team:
             return None, "Equipe n\u00e3o encontrada.", 404
-        if team.get("active", True) is False and changes["team_id"] != existing.get("team_id"):
+        if not _team_is_active(team) and changes["team_id"] != current.get("team_id"):
             return None, "N\u00e3o \u00e9 poss\u00edvel mover usu\u00e1rio para equipe desativada.", 409
         updates["team_id"] = changes["team_id"]
     if "role" in changes:
         if changes["role"] not in ROLES:
             return None, "Perfil inválido.", 400
-        if user_id == actor_id and changes["role"] != existing.get("role"):
+        if user_id == actor_id and changes["role"] != current.get("role"):
             return None, "Não é permitido alterar o próprio perfil de acesso.", 400
         updates["role"] = changes["role"]
     if "disabled" in changes:

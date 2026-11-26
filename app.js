@@ -146,7 +146,6 @@ function initApp() {
 
   const closeNav = () => document.body.classList.remove("nav-open");
   $("#nav-toggle").onclick = () => document.body.classList.toggle("nav-open");
-  $("[data-home]").onclick = () => { closeView(); closeNav(); q.focus(); };
 
   function setActive(name) {
     document.querySelectorAll(".side-nav button").forEach((b) => b.classList.toggle("active", name ? b.dataset.view === name : b.hasAttribute("data-home")));
@@ -363,8 +362,54 @@ function initApp() {
   });
   resizeQuery();
   const recentList = $("#recent-investigations");
+
+  /* ---------- Pop-up de opções (abre ao lado da barra lateral) ---------- */
+  // Fica fora da lista rolável para não ser cortado por ela.
+  const recentPopup = document.createElement("div");
+  recentPopup.className = "recent-popup";
+  recentPopup.setAttribute("role", "menu");
+  recentPopup.hidden = true;
+  recentPopup.innerHTML = `<button type="button" role="menuitem" data-popup-delete>Excluir investigação</button>`;
+  document.body.appendChild(recentPopup);
+  let popupSession = null, popupTrigger = null;
+
+  function closeRecentPopup(restoreFocus = false) {
+    recentPopup.hidden = true;
+    popupTrigger?.setAttribute("aria-expanded", "false");
+    popupTrigger?.classList.remove("open");
+    if (restoreFocus) popupTrigger?.focus();
+    popupSession = null; popupTrigger = null;
+  }
+
+  function openRecentPopup(trigger) {
+    closeRecentPopup();
+    popupSession = trigger.dataset.investigationMenu;
+    popupTrigger = trigger;
+    trigger.setAttribute("aria-expanded", "true");
+    trigger.classList.add("open");
+    recentPopup.hidden = false;
+    const t = trigger.getBoundingClientRect();
+    const side = trigger.closest(".sidebar")?.getBoundingClientRect() || t;
+    const w = recentPopup.offsetWidth, h = recentPopup.offsetHeight, gap = 8;
+    // Preferência: ao lado direito da barra lateral, alinhado ao botão de três pontos.
+    let left = side.right + gap;
+    if (left + w > window.innerWidth - gap) left = Math.max(gap, window.innerWidth - w - gap);
+    const top = Math.max(gap, Math.min(t.top, window.innerHeight - h - gap));
+    recentPopup.style.left = `${left}px`;
+    recentPopup.style.top = `${top}px`;
+    recentPopup.querySelector("button").focus({ preventScroll: true });
+  }
+
+  document.addEventListener("click", event => {
+    if (!recentPopup.hidden && !event.target.closest(".recent-popup, [data-investigation-menu]")) closeRecentPopup();
+  });
+  document.addEventListener("keydown", event => { if (event.key === "Escape" && !recentPopup.hidden) closeRecentPopup(true); });
+  window.addEventListener("resize", () => closeRecentPopup());
+  recentList?.addEventListener("scroll", () => closeRecentPopup());
+  $(".sidebar")?.addEventListener("scroll", () => closeRecentPopup());
   async function refreshRecentInvestigations() {
     if (!recentList) return;
+    closeRecentPopup();
     recentList.innerHTML = `<p class="recent-empty">Carregando histórico…</p>`;
     try {
       const { investigations } = await api("/knowledge/conversations");
@@ -374,10 +419,7 @@ function initApp() {
           <button class="recent-investigation-open" type="button" data-investigation-open="${esc(item.session_id)}" title="${esc(item.title)}">
             <span>${esc(item.title)}</span><time>${date} · ${item.turn_count} mensagem(ns)</time>
           </button>
-          <details class="recent-investigation-menu">
-            <summary aria-label="Mais opções">⋯</summary>
-            <div><button type="button" data-investigation-delete="${esc(item.session_id)}">Excluir investigação</button></div>
-          </details>
+          <button class="recent-investigation-more" type="button" aria-label="Mais opções" aria-haspopup="menu" aria-expanded="false" data-investigation-menu="${esc(item.session_id)}">⋯</button>
         </article>`;
       }).join("") : `<p class="recent-empty">Nenhuma dúvida recente.</p>`;
     } catch (ex) {
@@ -400,19 +442,32 @@ function initApp() {
   });
   refreshRecentInvestigations();
 
+  async function deleteInvestigation(sessionId, button) {
+    const opener = [...recentList.querySelectorAll("[data-investigation-open]")].find(b => b.dataset.investigationOpen === sessionId);
+    const title = opener?.querySelector("span")?.textContent.trim();
+    if (!confirm(`Excluir esta investigação${title ? `: ${title}` : ""}?`)) return;
+    button.disabled = true;
+    try {
+      await api(`/knowledge/conversations/${encodeURIComponent(sessionId)}`, { method: "DELETE" });
+      if (knowledge.isCurrentConversation(sessionId)) knowledge.resetConversation();
+      await refreshRecentInvestigations();
+      toast("Investigação excluída.");
+    } catch (ex) { toast(ex.message, true); }
+    finally { button.disabled = false; }
+  }
+
+  recentPopup.addEventListener("click", async event => {
+    const deleteButton = event.target.closest("[data-popup-delete]");
+    if (!deleteButton || !popupSession) return;
+    const sessionId = popupSession;
+    closeRecentPopup();
+    await deleteInvestigation(sessionId, deleteButton);
+  });
+
   recentList?.addEventListener("click", async event => {
-    const deleteButton = event.target.closest("[data-investigation-delete]");
-    if (deleteButton) {
-      const sessionId = deleteButton.dataset.investigationDelete;
-      const title = deleteButton.closest(".recent-investigation")?.querySelector(".recent-investigation-open")?.textContent.trim();
-      if (!confirm(`Excluir esta investigação${title ? `: ${title}` : ""}?`)) return;
-      deleteButton.disabled = true;
-      try {
-        await api(`/knowledge/conversations/${encodeURIComponent(sessionId)}`, { method: "DELETE" });
-        if (knowledge.isCurrentConversation(sessionId)) knowledge.resetConversation();
-        await refreshRecentInvestigations();
-        toast("Investigação excluída.");
-      } catch (ex) { toast(ex.message, true); deleteButton.disabled = false; }
+    const menuButton = event.target.closest("[data-investigation-menu]");
+    if (menuButton) {
+      if (popupTrigger === menuButton) closeRecentPopup(); else openRecentPopup(menuButton);
       return;
     }
     const openButton = event.target.closest("[data-investigation-open]");
@@ -423,6 +478,14 @@ function initApp() {
       closeNav();
       await knowledge.loadConversation(data);
     } catch (ex) { toast(ex.message, true); }
+  });
+
+  /* ---------- Nova dúvida (nova janela de conversa) ---------- */
+  $("#new-chat")?.addEventListener("click", () => {
+    closeView();
+    closeNav();
+    if (knowledge.resetConversation()) q.focus();
+    else toast("Aguarde a resposta em andamento para iniciar uma nova dúvida.", true);
   });
 
   /* ---------- Atalhos ---------- */

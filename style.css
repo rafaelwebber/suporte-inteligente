@@ -126,14 +126,15 @@ dialog h3 { margin: 0 0 4px; font-size: 18px; font-weight: 500; }
   .who { display: none; }
 }
 @media (prefers-reduced-motion: no-preference) {
-  .menu, dialog[open] { animation: pop .12s ease-out; }
+  .menu, dialog[open], .recent-popup:not([hidden]) { animation: pop .12s ease-out; }
   @keyframes pop { from { opacity: 0; transform: translateY(-4px); } }
 }
 
 /* ---------- Barra lateral ---------- */
 .layout { display: flex; min-height: 100vh; }
 .content { flex: 1; min-width: 0; position: relative; }
-.top { position: absolute; }
+/* Cabeçalho fixo: continua visível ao rolar a página (começa depois da barra lateral) */
+.top { position: fixed; top: 0; left: 280px; right: 0; z-index: 20; background: var(--bg); }
 .stage { min-height: 100vh; }
 .sidebar { width: 280px; flex: none; position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 12px 10px; border-right: 1px solid var(--line); background: var(--bg); }
 .side-nav { display: flex; flex-direction: column; gap: 2px; }
@@ -148,13 +149,15 @@ dialog h3 { margin: 0 0 4px; font-size: 18px; font-weight: 500; }
 .recent-investigation-open { display: grid !important; flex: 1; min-width: 0; gap: 3px !important; padding: 8px 7px !important; }
 .recent-investigation-open span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
 .recent-investigation-open time { color: var(--muted); font-size: 10px; }
-.recent-investigation-menu { position: relative; flex: none; }
-.recent-investigation-menu summary { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; cursor: pointer; list-style: none; color: var(--muted); font-size: 20px; line-height: 1; }
-.recent-investigation-menu summary::-webkit-details-marker { display: none; }
-.recent-investigation-menu summary:hover { background: var(--surface); color: var(--text); }
-.recent-investigation-menu > div { position: absolute; z-index: 5; top: 32px; right: 0; min-width: 140px; padding: 4px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); box-shadow: 0 8px 24px var(--backdrop); }
-.recent-investigation-menu > div button { width: 100%; padding: 8px 10px; border: 0; border-radius: 6px; background: none; color: var(--danger, #ef4444); text-align: left; font-size: 12px; }
-.recent-investigation-menu > div button:hover { background: var(--surface-2); }
+.side-nav .recent-investigation-more { flex: none; display: grid; place-items: center; width: 30px; height: 30px; padding: 0; gap: 0; border-radius: 8px; color: var(--muted); font-size: 20px; line-height: 1; }
+.side-nav .recent-investigation-more:hover, .side-nav .recent-investigation-more.open { background: var(--surface); color: var(--text); }
+[data-theme="light"] .side-nav .recent-investigation-more { color: rgba(255, 255, 255, .75); }
+[data-theme="light"] .side-nav .recent-investigation-more:hover, [data-theme="light"] .side-nav .recent-investigation-more.open { background: rgba(255, 255, 255, .24); color: #fff; }
+/* Pop-up de opções: fica fora da barra lateral (position: fixed), ao lado dela */
+.recent-popup { position: fixed; z-index: 40; min-width: 180px; padding: 4px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--text); box-shadow: 0 8px 24px var(--backdrop); }
+.recent-popup[hidden] { display: none; }
+.recent-popup button { display: block; width: 100%; padding: 9px 12px; border: 0; border-radius: 7px; background: none; color: var(--danger); text-align: left; font-size: 13px; }
+.recent-popup button:hover, .recent-popup button:focus-visible { background: var(--danger-bg); }
 #nav-toggle { display: none; }
 
 /* Tema claro: sidebar e barra de pesquisa na cor da marca */
@@ -184,6 +187,7 @@ dialog h3 { margin: 0 0 4px; font-size: 18px; font-weight: 500; }
   .sidebar { position: fixed; left: 0; z-index: 30; transform: translateX(-100%); }
   body.nav-open .sidebar { transform: none; box-shadow: 0 0 0 100vmax var(--backdrop); }
   #nav-toggle { display: grid; }
+  .top { left: 0; }
 }
 .side-label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; margin: 18px 12px 6px; }
 body:not(.is-admin) [data-admin] { display: none !important; }
@@ -264,13 +268,15 @@ dialog .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150p
 h3.sub { font-size: 15px; font-weight: 500; margin: 22px 0 8px; }
 .top-tickets { margin: 0; padding-left: 20px; }
 .top-tickets li + li { margin-top: 6px; }
-.dashboard { display: grid; gap: 16px; }
+.dashboard { display: grid; gap: 24px; }
+/* Espaço entre o aviso, os cartões e os gráficos (antes ficavam colados) */
+.dashboard #stats-content { display: grid; gap: 20px; }
 .dashboard-filters { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 10px; }
 .dashboard-filters label { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
 .dashboard-filters select { min-height: 38px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); color: var(--text); font: inherit; }
-.dashboard-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.dashboard-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-.dashboard-panel { min-width: 0; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface-2); }
+.dashboard-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+.dashboard-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.dashboard-panel { min-width: 0; padding: 20px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface-2); }
 .dashboard-panel h3 { margin: 0; font-size: 15px; font-weight: 550; }
 .dashboard-hint { margin: 4px 0 14px; color: var(--muted); font-size: 12px; }
 .dashboard-empty,.dashboard-note { color: var(--muted); font-size: 13px; line-height: 1.5; }
