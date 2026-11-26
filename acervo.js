@@ -35,7 +35,7 @@ function initKnowledgeSearch({
     transcript?.querySelectorAll?.("[data-option], [data-other], [data-retry]").forEach(button => { button.disabled = locked; });
   }
   function resetConversation() {
-    if (busy) return;
+    if (busy) return false;
     conversationId = null; pendingRequest = null; conversationClosed = false;
     currentOptions = [];
     retryMessage = "";
@@ -44,6 +44,7 @@ function initKnowledgeSearch({
     results.innerHTML = ""; error.textContent = ""; input.value = "";
     input.placeholder = initialPlaceholder; input.dispatchEvent(new Event("input")); input.focus();
     onReset();
+    return true;
   }
 
   function loadConversation(data) {
