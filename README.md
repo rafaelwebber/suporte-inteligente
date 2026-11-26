@@ -2,9 +2,9 @@
 
 Todo time de suporte conhece a sensação: chega um ticket novo e alguém lembra "isso já aconteceu antes, mas como foi que a gente resolveu mesmo?". Este projeto nasceu para responder essa pergunta rápido.
 
-A ideia é simples: cada ticket resolvido com sucesso vira conhecimento. Quando um atendente recebe um problema novo, ele descreve o que o cliente relatou e a plataforma devolve os tickets parecidos que já foram resolvidos, junto com a solução que funcionou. Assim o time não precisa reinventar a resposta toda vez e o cliente é atendido mais rápido.
+A plataforma reúne o histórico para apoiar técnicos em novos atendimentos. O acervo documental local inclui tickets com e sem solução, artigos, interações e casos curados com evidências. A pesquisa de tickets de sucesso continua disponível como um fluxo separado.
 
-## Como funciona
+## Fluxo original de tickets de sucesso
 
 1. **Os tickets entram na base.** Eles podem ser cadastrados na mão pelo painel ou importados de um CSV exportado de outra ferramenta de atendimento.
 2. **A plataforma separa o que deu certo.** Um ticket só entra na base de conhecimento se foi resolvido, tem a solução descrita, nunca foi reaberto e não recebeu nota baixa do cliente (a nota mínima é configurável, o padrão é 4 de 5).
@@ -79,6 +79,12 @@ O CSV precisa ter pelo menos as colunas de título e descrição. Os nomes das c
 
 ## Importando o pacote de conhecimento JSON/JSONL
 
+Para preparar novas exportações CSV, consulte [Preparação da base para técnicos internos](docs/preparacao-base.md).
+Para avaliar a recuperação dos casos piloto e seus qualificadores, consulte
+[Validação do acervo preparado](docs/validacao-acervo.md).
+O comando `python -m knowledge_prepare --help` apresenta as entradas. Ele produz
+um pacote validado, com relatório de cobertura, sem modificar o banco da aplicação.
+
 O item 3 dispõe de um importador local separado para o pacote normalizado da
 `DataSetBase`. Ele valida o catálogo, integridade, registros e vínculos, mantém
 histórico e ativa a nova versão somente após a carga completa. A preparação é
@@ -123,9 +129,9 @@ adicionada no item 6, use também `python -m evaluation.hybrid`.
 
 A integração do acervo importado está disponível no campo principal **Qual sua dúvida?**. Usa SQLite FTS5 e embeddings locais em CPU,
 com fontes e avisos de revisão. A pesquisa de tickets existente é separada.
-Não requer PostgreSQL ou chave de API para pesquisar. A geração opcional com Gemini
-está implementada e fica desativada até a configuração no servidor; consulte
-[como configurar e usar o Gemini](docs/gemini.md).
+Não requer PostgreSQL ou chave de API para pesquisar. Para habilitar a orientação
+por IA, consulte [como usar GPT no piloto](docs/conversa-rag.md#como-usar-gpt-no-piloto)
+ou [como configurar o Gemini](docs/gemini.md).
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
@@ -137,6 +143,11 @@ O banco `instance/knowledge.sqlite3` deve existir; caso necessário, execute
 `python -m knowledge_import importar` antes de indexar. Somente a preparação do
 modelo usa internet, para baixar pesos públicos. Depois, consultas e embeddings
 da busca são locais. O login Firebase continua exigindo conexão.
+
+As conversas e os eventos usados pelas estatísticas são persistidos em SQLite,
+por padrão em `instance/conversations.sqlite3`. O caminho pode ser definido por
+`KNOWLEDGE_CONVERSATION_DATABASE`. A tabela analítica guarda métricas agregadas e
+fontes recuperadas, sem armazenar o texto das mensagens.
 
 Consulte [o guia de instalação, atualização e limites](docs/busca-local.md).
 

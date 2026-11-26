@@ -74,6 +74,29 @@ class SearchTests(unittest.TestCase):
         self.embedder = FixtureEmbedder()
         self.service = SearchService(self.settings, lambda _: self.embedder)
 
+    def test_explicit_ticket_excludes_other_tickets_and_numeric_prefixes(self):
+        records = [record('target', 'PLC', 'Comunicação pendente', ticket='42'),
+                   record('prefix', 'PLC', 'Comunicação pendente', ticket='420'),
+                   record('other', 'PLC', 'Comunicação pendente; versão 42', ticket='99')]
+        source_fixture(self.settings.source, records, 'refs')
+        build(self.settings, self.embedder)
+        found = self.service.search('Ticket #42 comunicação PLC')['results']
+        self.assertEqual(['target'], [r['source_id'] for r in found])
+        self.assertEqual([], self.service.search('Ticket #99999 comunicação PLC')['results'])
+
+    def test_explicit_expedition_filters_vector_candidates_too(self):
+        records = [record('target', 'PLC', 'Expedição 1234: comunicação interrompida'),
+                   record('other', 'PLC', 'Expedição 12345: comunicação interrompida')]
+        source_fixture(self.settings.source, records, 'refs')
+        build(self.settings, self.embedder)
+        found = self.service.search('Expedição 1234 causa comunicação PLC')['results']
+        self.assertEqual(['target'], [r['source_id'] for r in found])
+
+    def test_versions_and_dates_are_not_explicit_references(self):
+        from knowledge_search.service import explicit_references
+        self.assertEqual([], explicit_references('versão 42 de 2026-11-21'))
+        self.assertEqual([('producao', '42')], explicit_references('produção 42'))
+
     def test_projection_uses_only_authorized_explicit_fields(self):
         doc = project(self.records[0])
         self.assertNotIn("NOME_PRIVADO", doc["body"])
@@ -250,7 +273,8 @@ class KnowledgeApiTests(unittest.TestCase):
         from api.config import Config
         with patch.object(Config, "SECRET_KEY", "test-secret"), patch.object(Config, "DEBUG", False):
             self.app = create_app()
-        self.app.config.update(TESTING=True, KNOWLEDGE_SEARCH_SETTINGS=self.settings)
+        self.app.config.update(TESTING=True, KNOWLEDGE_SEARCH_SETTINGS=self.settings,
+                               KNOWLEDGE_LLM_PROVIDER="gemini")
         from knowledge_search.generation import GenerationSettings
         self.app.config["GEMINI_SETTINGS"] = GenerationSettings()
         build(self.settings, self.embedder)

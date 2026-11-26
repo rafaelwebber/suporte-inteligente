@@ -1,0 +1,708 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Caso técnico — proposta 0.2",
+  "type": "object",
+  "properties": {
+    "schema_versao": {
+      "const": "0.2.0"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "revisao": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "tipo": {
+      "const": "caso_ticket"
+    },
+    "ticket_origem": {
+      "type": "string",
+      "minLength": 1
+    },
+    "titulo": {
+      "type": "string",
+      "minLength": 1
+    },
+    "publico": {
+      "const": "tecnicos_internos"
+    },
+    "cobertura": {
+      "type": "object",
+      "properties": {
+        "historico_completo": {
+          "type": "boolean"
+        },
+        "interacoes_declaradas_csv": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "limitacoes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "historico_completo",
+        "interacoes_declaradas_csv",
+        "limitacoes"
+      ],
+      "additionalProperties": false
+    },
+    "proveniencia": {
+      "type": "object",
+      "properties": {
+        "sistema_origem": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "referencia_v0_1": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256_referencia_v0_1": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "estado": {
+          "const": "exemplo_curado_nao_homologado"
+        }
+      },
+      "required": [
+        "sistema_origem",
+        "referencia_v0_1",
+        "sha256_referencia_v0_1",
+        "estado"
+      ],
+      "additionalProperties": false
+    },
+    "fontes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "tipo": {
+            "enum": [
+              "registro_csv",
+              "texto_chat",
+              "interacao_transcrita",
+              "imagem_transcrita",
+              "esclarecimento"
+            ]
+          },
+          "revisao": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "texto": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sha256_texto": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "localizador": {
+            "type": "string",
+            "minLength": 1
+          },
+          "chave_interacao_origem": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
+          },
+          "data_original": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
+          },
+          "autor_original": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
+          },
+          "disponibilidade_original": {
+            "enum": [
+              "csv_no_workspace",
+              "chat",
+              "imagem_somente_no_chat"
+            ]
+          },
+          "limites": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 0
+          }
+        },
+        "required": [
+          "id",
+          "tipo",
+          "revisao",
+          "texto",
+          "sha256_texto",
+          "localizador",
+          "chave_interacao_origem",
+          "data_original",
+          "autor_original",
+          "disponibilidade_original",
+          "limites"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "evidencias": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "fonte_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "revisao_fonte": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "inicio": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "fim": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "trecho": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "id",
+          "fonte_id",
+          "revisao_fonte",
+          "inicio",
+          "fim",
+          "trecho"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "contexto": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "campo": {
+            "enum": [
+              "produto",
+              "componente",
+              "tela",
+              "cliente",
+              "versao_software",
+              "versao_formula",
+              "configuracao"
+            ]
+          },
+          "valor": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidencia_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "id",
+          "campo",
+          "valor",
+          "evidencia_ids"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0
+    },
+    "ocorrencias": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "tipo_referencia": {
+            "type": "string",
+            "minLength": 1
+          },
+          "referencia": {
+            "type": "string",
+            "minLength": 1
+          },
+          "descricao": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidencia_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "id",
+          "tipo_referencia",
+          "referencia",
+          "descricao",
+          "evidencia_ids"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0
+    },
+    "eventos": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "ocorrencia_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "descricao": {
+            "type": "string",
+            "minLength": 1
+          },
+          "horario_original": {
+            "type": "string",
+            "minLength": 1
+          },
+          "precisao": {
+            "enum": [
+              "segundos",
+              "milissegundos"
+            ]
+          },
+          "data": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
+          },
+          "fuso": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
+          },
+          "evidencia_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "id",
+          "ocorrencia_id",
+          "descricao",
+          "horario_original",
+          "precisao",
+          "data",
+          "fuso",
+          "evidencia_ids"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0
+    },
+    "afirmacoes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "natureza": {
+            "enum": [
+              "observacao",
+              "analise",
+              "acao",
+              "correcao",
+              "resultado",
+              "regra",
+              "teste",
+              "esclarecimento"
+            ]
+          },
+          "enunciado": {
+            "type": "string",
+            "minLength": 1
+          },
+          "qualificacao": {
+            "enum": [
+              "relatado",
+              "hipotese",
+              "especificado",
+              "observado_na_imagem",
+              "confirmado_pelo_usuario"
+            ]
+          },
+          "execucao": {
+            "enum": [
+              "nao_se_aplica",
+              "planejada",
+              "realizada_conforme_relato"
+            ]
+          },
+          "escopo": {
+            "type": "object",
+            "properties": {
+              "estado": {
+                "enum": [
+                  "ticket",
+                  "ocorrencias_identificadas",
+                  "ocorrencias_nao_identificadas"
+                ]
+              },
+              "ocorrencia_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "estado",
+              "ocorrencia_ids"
+            ],
+            "additionalProperties": false,
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "estado": {
+                      "const": "ocorrencias_identificadas"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "ocorrencia_ids": {
+                      "minItems": 1
+                    }
+                  }
+                },
+                "else": {
+                  "properties": {
+                    "ocorrencia_ids": {
+                      "maxItems": 0
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "evidencia_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          },
+          "contexto_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "revisao": {
+            "enum": [
+              "pendente",
+              "esclarecido_pelo_usuario",
+              "revisado"
+            ]
+          },
+          "metodo_extracao": {
+            "const": "curadoria_assistida"
+          },
+          "limites": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 0
+          }
+        },
+        "required": [
+          "id",
+          "natureza",
+          "enunciado",
+          "qualificacao",
+          "execucao",
+          "escopo",
+          "evidencia_ids",
+          "contexto_ids",
+          "revisao",
+          "metodo_extracao",
+          "limites"
+        ],
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "natureza": {
+                  "enum": [
+                    "acao",
+                    "correcao",
+                    "teste"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "execucao": {
+                  "enum": [
+                    "planejada",
+                    "realizada_conforme_relato"
+                  ]
+                }
+              }
+            },
+            "else": {
+              "properties": {
+                "execucao": {
+                  "const": "nao_se_aplica"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "minItems": 0
+    },
+    "relacoes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "origem_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "destino_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "tipo": {
+            "enum": [
+              "resultado_apos_acao",
+              "trata_achado",
+              "hipotese_semelhante_a",
+              "esclarece",
+              "especifica",
+              "testa"
+            ]
+          },
+          "qualificacao": {
+            "enum": [
+              "documentada",
+              "interpretacao_a_revisar",
+              "hipotese",
+              "confirmada_pelo_usuario"
+            ]
+          },
+          "evidencia_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          },
+          "limites": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 0
+          }
+        },
+        "required": [
+          "id",
+          "origem_id",
+          "destino_id",
+          "tipo",
+          "qualificacao",
+          "evidencia_ids",
+          "limites"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0
+    },
+    "pendencias": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "tema": {
+            "type": "string",
+            "minLength": 1
+          },
+          "estado": {
+            "enum": [
+              "nao_informado",
+              "nao_sabe",
+              "nao_verificado",
+              "resolvido"
+            ]
+          },
+          "descricao": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidencia_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "resolucao_afirmacao_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
+          }
+        },
+        "required": [
+          "id",
+          "tema",
+          "estado",
+          "descricao",
+          "evidencia_ids",
+          "resolucao_afirmacao_id"
+        ],
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "estado": {
+                  "const": "resolvido"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "resolucao_afirmacao_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "evidencia_ids": {
+                  "minItems": 1
+                }
+              }
+            },
+            "else": {
+              "properties": {
+                "resolucao_afirmacao_id": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "minItems": 0
+    }
+  },
+  "required": [
+    "schema_versao",
+    "id",
+    "revisao",
+    "tipo",
+    "ticket_origem",
+    "titulo",
+    "publico",
+    "cobertura",
+    "proveniencia",
+    "fontes",
+    "evidencias",
+    "contexto",
+    "ocorrencias",
+    "eventos",
+    "afirmacoes",
+    "relacoes",
+    "pendencias"
+  ],
+  "additionalProperties": false
+}

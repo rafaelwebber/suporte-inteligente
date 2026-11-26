@@ -7,12 +7,8 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from api.config import DEFAULT_SECRET_KEY, Config
 
 FRONTEND_DIR = Path(__file__).resolve().parent.parent
-<<<<<<< HEAD
 FRONTEND_FILES = {"index.html", "app.html", "app.js", "style.css", "acervo.html", "acervo.js", "acervo.css"}
-=======
 ASSETS_DIR = FRONTEND_DIR / "assets"
-FRONTEND_FILES = {"index.html", "app.html", "app.js", "style.css"}
->>>>>>> deb5d75b7164cc16a3f15ae3e04eb2b0f2793ad8
 
 
 def create_app() -> Flask:

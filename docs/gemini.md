@@ -29,12 +29,12 @@ A presença da chave sozinha não ativa chamadas externas.
 ## Usar
 
 1. No painel, escreva no campo principal **Qual sua dúvida?** e envie a pesquisa. A triagem também abre esse campo com seu contexto.
-2. Confira a pergunta e os resultados. A busca, sozinha, não chama o Gemini.
-3. Clique em **Gerar resposta com Gemini** para solicitar a redação.
-4. Use **Conferir evidências** para ver as citações e abrir os registros originais.
+2. O servidor pesquisa primeiro no acervo local. Quando o Gemini está ativado, o assistente usa os resultados para pedir esclarecimentos ou elaborar uma orientação com citações.
+3. Se o Gemini estiver desativado ou falhar, os resultados locais continuam visíveis nos cards da tela.
+4. Use os cards e as evidências da resposta para abrir os registros originais.
 
 O primeiro teste pode ser uma consulta técnica sem informações de cliente.
-O botão aparece quando a integração está ativada e configurada e existem fontes.
+Quando a integração está ativada e configurada, o envio pode chamar o Gemini.
 Se houver falha, limite de uso ou resposta inválida, as fontes continuam disponíveis.
 Uma resposta insuficientemente fundamentada pode resultar em abstenção.
 

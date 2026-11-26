@@ -3,6 +3,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from knowledge_search.config import Settings
 from knowledge_search.generation import GenerationSettings
+from knowledge_search.openai_provider import OpenAISettings
 
 load_dotenv()
 
@@ -14,8 +15,14 @@ def _csv_env(name: str, default: str = "") -> list[str]:
 
 
 class Config:
+    KNOWLEDGE_LLM_PROVIDER = os.getenv("KNOWLEDGE_LLM_PROVIDER", "gemini").strip().lower()
     GEMINI_SETTINGS = GenerationSettings.from_env()
+    OPENAI_SETTINGS = OpenAISettings.from_env()
     KNOWLEDGE_SEARCH_SETTINGS = Settings.from_env()
+    KNOWLEDGE_CONVERSATION_DATABASE = Path(os.getenv(
+        "KNOWLEDGE_CONVERSATION_DATABASE",
+        str(KNOWLEDGE_SEARCH_SETTINGS.index.parent / "conversations.sqlite3"),
+    ))
     SECRET_KEY = os.getenv("FLASK_SECRET_KEY", DEFAULT_SECRET_KEY)
     DEBUG = os.getenv("FLASK_DEBUG", "false").lower() in ("1", "true", "yes")
     MAX_CONTENT_LENGTH = int(os.getenv("MAX_UPLOAD_MB", "10")) * 1024 * 1024

@@ -76,8 +76,11 @@ def create_user(
     if error:
         return None, error, 400
 
-    if not get_doc("teams", team_id):
-        return None, "Equipe não encontrada.", 404
+    team = get_doc("teams", team_id)
+    if not team:
+        return None, "Equipe n\u00e3o encontrada.", 404
+    if team.get("active", True) is False:
+        return None, "N\u00e3o \u00e9 poss\u00edvel cadastrar usu\u00e1rio em equipe desativada.", 409
 
     auth = get_auth()
     try:
@@ -136,8 +139,11 @@ def update_user(
     if "full_name" in changes:
         updates["full_name"] = (changes["full_name"] or "").strip() or None
     if "team_id" in changes:
-        if not get_doc("teams", changes["team_id"]):
-            return None, "Equipe não encontrada.", 404
+        team = get_doc("teams", changes["team_id"])
+        if not team:
+            return None, "Equipe n\u00e3o encontrada.", 404
+        if team.get("active", True) is False and changes["team_id"] != existing.get("team_id"):
+            return None, "N\u00e3o \u00e9 poss\u00edvel mover usu\u00e1rio para equipe desativada.", 409
         updates["team_id"] = changes["team_id"]
     if "role" in changes:
         if changes["role"] not in ROLES:

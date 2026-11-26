@@ -6,9 +6,7 @@
   <title>Painel</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="style.css">
-<<<<<<< HEAD
   <link rel="stylesheet" href="acervo.css">
-=======
   <script>
     (function () {
       var t = localStorage.getItem("theme");
@@ -16,7 +14,6 @@
       document.documentElement.setAttribute("data-theme", t);
     })();
   </script>
->>>>>>> deb5d75b7164cc16a3f15ae3e04eb2b0f2793ad8
 </head>
 <body data-page="app">
   <div class="layout">
@@ -25,9 +22,13 @@
         <button type="button" data-home class="active">
           <svg viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16zM13 7l4 4"/></svg>Qual sua dúvida?
         </button>
-        <button type="button" data-view="tickets">
-          <svg viewBox="0 0 24 24"><path d="M4 7a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 000 4v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2a2 2 0 000-4z"/></svg>Tickets
-        </button>
+
+        <section class="recent-investigations" aria-label="Dúvidas recentes">
+          <p class="side-label">Dúvidas Recentes</p>
+          <div id="recent-investigations" class="recent-investigation-list" aria-live="polite">
+            <p class="recent-empty">Carregando histórico…</p>
+          </div>
+        </section>
 
         <p class="side-label" data-admin>Administração</p>
         <button type="button" data-view="users" data-admin>
@@ -35,9 +36,6 @@
         </button>
         <button type="button" data-view="teams" data-admin>
           <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Equipes
-        </button>
-        <button type="button" data-new="user" data-admin>
-          <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M19 8v6M16 11h6"/></svg>Criar usuário
         </button>
         <button type="button" data-view="stats" data-admin>
           <svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Estatísticas
@@ -79,38 +77,22 @@
         <div class="knowledge-composer">
         <div class="bar-wrap">
           <form class="bar" id="ask-form">
-            <textarea id="q" rows="1" maxlength="1800" placeholder="Descreva o problema para o assistente" autocomplete="off" aria-label="Problema do cliente ou resposta ao assistente" title="Enter para enviar; Shift + Enter para inserir uma nova linha"></textarea>
-            <button class="send" id="send" type="submit" aria-label="Enviar ao assistente">
+            <textarea id="q" rows="1" maxlength="1800" placeholder="Descreva o problema para investigar" autocomplete="off" aria-label="Problema do cliente ou resposta ao assistente" title="Enter para enviar; Shift + Enter para inserir uma nova linha"></textarea>
+            <button class="send" id="send" type="submit" aria-label="Enviar consulta">
               <svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
             </button>
           </form>
         </div>
 
-        <div class="knowledge-home-actions"><button class="ghost" type="button" id="knowledge-local">Pesquisar sem IA</button><button class="ghost" type="button" id="knowledge-reset">Nova investigação</button></div>
-        <p class="knowledge-disclosure">O assistente usa o Google Gemini. Envie apenas informações autorizadas para esse serviço.</p>
+        <div class="knowledge-home-actions"><button class="ghost" type="button" id="knowledge-reset">Nova investigação</button></div>
+        <p class="knowledge-disclosure">A busca consulta o acervo local. Quando disponível, a orientação usa o serviço de IA configurado no servidor. Envie apenas informações autorizadas para esse serviço.</p>
         </div>
 
-        <nav class="shortcuts" id="shortcuts" aria-label="Seções">
-          <button type="button" data-view="tickets">
-            <svg viewBox="0 0 24 24"><path d="M4 7a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 000 4v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2a2 2 0 000-4z"/></svg>
-            Ver tickets da minha equipe
-          </button>
-          <button type="button" data-new="ticket">
-            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-            Registrar novo ticket
-          </button>
-        </nav>
 
         <section class="panel" id="panel" hidden>
           <div class="panel-head">
             <h2 id="panel-title"></h2>
             <div class="panel-tools">
-              <select id="status-filter" aria-label="Filtrar por status" hidden>
-                <option value="">Todos os status</option>
-                <option value="open">Abertos</option>
-                <option value="in_progress">Em andamento</option>
-                <option value="resolved">Resolvidos</option>
-              </select>
               <input id="filter" type="search" placeholder="Filtrar" autocomplete="off" aria-label="Filtrar lista">
               <button class="ghost" id="back" type="button">Voltar</button>
             </div>
@@ -151,46 +133,30 @@
     </form>
   </dialog>
 
-  <dialog id="dlg-ticket" class="wide">
-    <form method="dialog" id="form-ticket">
-      <h3 id="ticket-title">Novo ticket</h3>
-      <div class="field"><label for="k-title">Título</label><input id="k-title" name="title" required autocomplete="off"></div>
-      <div class="field"><label for="k-desc">Descrição do problema</label><textarea id="k-desc" name="description" rows="4" required></textarea></div>
-      <div class="row">
-        <div class="field"><label for="k-cat">Categoria</label><input id="k-cat" name="category" autocomplete="off"></div>
-        <div class="field"><label for="k-prod">Produto / sistema</label><input id="k-prod" name="product" autocomplete="off"></div>
+  <dialog id="dlg-team-details" class="wide" aria-labelledby="team-details-title">
+    <div class="view">
+      <div class="knowledge-document-head">
+        <h3 id="team-details-title"></h3>
+        <button class="ghost" type="button" data-close>Fechar</button>
       </div>
-      <div class="field"><label for="k-tags">Tags (separadas por vírgula)</label><input id="k-tags" name="tags" autocomplete="off"></div>
-      <div class="row">
-        <div class="field"><label for="k-status">Status</label>
-          <select id="k-status" name="status"><option value="open">Aberto</option><option value="in_progress">Em andamento</option><option value="resolved">Resolvido</option></select>
-        </div>
-        <div class="field"><label for="k-sat">Nota do cliente (1 a 5)</label>
-          <select id="k-sat" name="satisfaction"><option value="">Sem nota</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
-        </div>
-        <div class="field" data-admin><label for="k-team">Equipe</label><select id="k-team" name="team_id"></select></div>
-      </div>
-      <div class="field"><label for="k-res">Solução aplicada</label><textarea id="k-res" name="resolution" rows="4"></textarea></div>
-      <p class="hint">Dados pessoais (e-mail, CPF, CNPJ, telefone, cartão) são mascarados automaticamente ao salvar.</p>
-      <p class="error" id="ticket-error" role="alert"></p>
+      <div id="team-details-body"></div>
+    </div>
+  </dialog>
+
+  <dialog id="dlg-team-link-user">
+    <form method="dialog" id="form-team-link-user">
+      <h3>Vincular usuário existente</h3>
+      <p class="hint">Selecione um usuário cadastrado para movê-lo para esta equipe.</p>
+      <div class="field"><label for="team-link-user">Usuário</label><select id="team-link-user" required></select></div>
+      <p class="error" id="team-link-error" role="alert"></p>
       <div class="actions">
         <button class="ghost" type="button" data-close>Cancelar</button>
-        <button class="primary" type="submit">Salvar</button>
+        <button class="primary" id="team-link-submit" type="submit">Vincular</button>
       </div>
     </form>
   </dialog>
 
-  <dialog id="dlg-view" class="wide">
-    <div class="view">
-      <h3 id="view-title"></h3>
-      <div id="view-body"></div>
-      <div class="actions">
-        <button class="del" type="button" id="view-delete" data-admin>Excluir</button>
-        <button class="ghost" type="button" data-close>Fechar</button>
-        <button class="primary" type="button" id="view-edit">Editar</button>
-      </div>
-    </div>
-  </dialog>
+
 
   <dialog id="dlg-password">
     <form method="dialog" id="form-password">
@@ -219,20 +185,6 @@
     </form>
   </dialog>
 
-  <dialog id="dlg-import">
-    <form method="dialog" id="form-import">
-      <h3>Importar tickets (CSV)</h3>
-      <p class="hint">Colunas obrigatórias: <b>titulo</b> e <b>descricao</b>. Opcionais: id_externo, categoria, produto, tags, equipe, status, solucao, nota, reaberturas, aberto_em, resolvido_em. Linhas com o mesmo id_externo são atualizadas em vez de duplicadas.</p>
-      <div class="field"><label for="i-file">Arquivo</label><input id="i-file" name="file" type="file" accept=".csv,text/csv" required></div>
-      <div class="field"><label for="i-team">Equipe padrão (quando a coluna equipe estiver vazia ou não existir)</label><select id="i-team" name="team_id" required></select></div>
-      <p class="error" id="import-error" role="alert"></p>
-      <div id="import-result"></div>
-      <div class="actions">
-        <button class="ghost" type="button" data-close>Fechar</button>
-        <button class="primary" type="submit" id="import-btn">Importar</button>
-      </div>
-    </form>
-  </dialog>
 
   <dialog id="knowledge-document" aria-labelledby="knowledge-document-title">
     <div class="knowledge-document-head"><h2 id="knowledge-document-title"></h2><button class="ghost" id="knowledge-close" type="button">Fechar</button></div>

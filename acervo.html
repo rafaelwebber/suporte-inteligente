@@ -19,11 +19,11 @@
     <div class="knowledge-composer">
     <form id="knowledge-form" class="knowledge-form">
       <label for="knowledge-query" class="knowledge-visually-hidden">Descreva o problema ou responda ao assistente</label>
-      <textarea id="knowledge-query" rows="2" maxlength="1800" placeholder="Descreva o problema para o assistente"></textarea>
-      <button class="send" id="knowledge-submit" type="submit" aria-label="Enviar ao assistente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg></button>
+      <textarea id="knowledge-query" rows="2" maxlength="1800" placeholder="Descreva o problema para investigar"></textarea>
+      <button class="send" id="knowledge-submit" type="submit" aria-label="Enviar consulta"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg></button>
     </form>
-    <div class="knowledge-home-actions"><button class="ghost" type="button" id="knowledge-local">Pesquisar sem IA</button><button class="ghost" type="button" id="knowledge-reset">Nova investigação</button></div>
-    <p class="knowledge-disclosure">O assistente usa o Google Gemini. Envie apenas informações autorizadas para esse serviço.</p>
+    <div class="knowledge-home-actions"><button class="ghost" type="button" id="knowledge-reset">Nova investigação</button></div>
+    <p class="knowledge-disclosure">A busca consulta o acervo local. Quando disponível, a orientação usa o serviço de IA configurado no servidor. Envie apenas informações autorizadas para esse serviço.</p>
     </div>
     <dialog id="knowledge-document"><div class="knowledge-document-head"><h2 id="knowledge-document-title"></h2><button class="ghost" id="knowledge-close" type="button">Fechar</button></div><div id="knowledge-document-body"></div></dialog>
   </main>

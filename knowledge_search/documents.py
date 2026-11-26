@@ -5,7 +5,7 @@ import re
 
 from .text import clean_text
 
-PROJECTION_VERSION = "caso-ticket-v1-chars1000-overlap120"
+PROJECTION_VERSION = "base-v2-chars1000-overlap120"
 FIELDS = (
     ("area_tecnica", "Área técnica"),
     ("problema_normalizado", "Problema normalizado"),
@@ -18,7 +18,40 @@ FIELDS = (
     ("versao_cliente", "Versão da ocorrência histórica"),
     ("versao_corrigida", "Versão corrigida informada"),
     ("aplicabilidade_ao_caso_atual", "Aplicabilidade"),
+    ("conteudo_documental", "Conteúdo documental"),
+    ("registro_interacao", "Registro da interação"),
+    ("conhecimento_estruturado", "Conhecimento estruturado"),
+    ("limites", "Limites"),
 )
+
+
+def prepared_content(kind, data):
+    """Projeções por contrato. Histórico não é automaticamente uma solução."""
+    if kind == 'artigo':
+        return {"assunto": data.get('titulo'), "conteudo_documental": '\n'.join(
+            str(data.get(k) or '') for k in ('resumo', 'texto')), "limites": data.get('limites', '')}
+    if kind == 'interacao':
+        return {"assunto": 'Ticket ' + str(data.get('ticket', '')) + ' — interação ' + str(data.get('interacao', '')),
+                "registro_interacao": str(data.get('texto') or ''),
+                "limites": 'Registro histórico sem classificação semântica. Não comprova causa, solução ou resultado. '
+                + ('Origem derivada; histórico incompleto. ' if data.get('origem_derivada') else '')
+                + 'Data original: ' + str(data.get('data_original') or 'não informada')}
+    if kind == 'caso_tecnico':
+        contexts = {c['id']: c['campo'] + ': ' + c['valor'] for c in data['contexto']}
+        parts = []
+        for claim in data['afirmacoes']:
+            # Qualificadores ficam no mesmo bloco do enunciado, inclusive em busca textual.
+            parts.append(' | '.join([
+                claim['id'], 'Natureza: ' + claim['natureza'], 'Qualificação: ' + claim['qualificacao'],
+                'Execução: ' + claim['execucao'], 'Revisão: ' + claim['revisao'],
+                'Escopo: ' + json.dumps(claim['escopo'], ensure_ascii=False),
+                'Contexto: ' + '; '.join(contexts[c] for c in claim['contexto_ids']),
+                'Enunciado: ' + claim['enunciado'], 'Limites: ' + '; '.join(claim['limites']),
+                'Evidências: ' + ', '.join(claim['evidencia_ids'])]))
+        return {"assunto": 'Ticket ' + data['ticket_origem'] + ' — ' + data['titulo'], 'conhecimento_estruturado': '\n\n'.join(parts),
+                'limites': '; '.join(data['cobertura']['limitacoes']) + ' Curadoria assistida, ainda não homologada. '
+                + '; '.join(p['descricao'] for p in data['pendencias'] if p['estado'] != 'resolvido')}
+    return data
 
 
 def digest(text):
@@ -31,9 +64,13 @@ def project(row):
     if row["kind"] != "conhecimento" or row["searchable"] != 1 or metadata.get("disponivel_pesquisa") is not True:
         return None
     # Outros tipos exigem um contrato de conteúdo próprio. Não indexar JSON bruto.
-    if payload.get("tipo") != "caso_ticket" or not isinstance(data, dict):
+    kind = payload.get('tipo')
+    if kind not in ("caso_ticket", "artigo", "interacao", "caso_tecnico") or not isinstance(data, dict):
         return None
+    data = prepared_content(kind, data)
     title = clean_text(str(data.get("assunto") or data.get("problema_normalizado") or row["id"]))[:180]
+    if kind == 'caso_ticket' and data.get('ticket'):
+        title = ('Ticket ' + str(data['ticket']) + ' — ' + title)[:180]
     parts, seen = [], set()
     for field, label in FIELDS:
         value = data.get(field)
@@ -52,6 +89,7 @@ def project(row):
     # Referências são texto, jamais caminhos abertos ou links fornecidos pelo arquivo.
     source = {k: str(origin.get(k, "")) for k in ("arquivo_relativo", "registro_id")}
     meta = {k: metadata.get(k) for k in ("estado_revisao", "uso_na_recomendacao", "apto_recomendacao_automatica", "versao_referencia")}
+    meta['tipo_registro'] = kind
     return {"key": key, "package_id": row["package_id"], "source_id": row["id"], "fingerprint": row["fingerprint"],
             "title": title, "body": body, "metadata": meta, "origin": source}
 

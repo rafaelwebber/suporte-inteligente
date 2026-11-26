@@ -44,6 +44,22 @@ def rename_team(team_id: str):
     return jsonify({"team": data}), status
 
 
+@teams_bp.patch("/<team_id>/status")
+@require_token_request
+@require_admin
+def set_team_status(team_id: str):
+    body = request.get_json(silent=True) or {}
+    data, error, status = team_service.set_team_active(
+        team_id=team_id,
+        active=body.get("active"),
+        actor_id=str(g.current_user.id),
+        ip=client_ip(),
+    )
+    if error:
+        return jsonify({"error": error}), status
+    return jsonify({"team": data}), status
+
+
 @teams_bp.delete("/<team_id>")
 @require_token_request
 @require_admin

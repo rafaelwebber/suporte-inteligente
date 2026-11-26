@@ -15,7 +15,10 @@ def list_teams() -> list[dict[str, Any]]:
         .order_by("created_at", direction=Query.DESCENDING)
         .stream()
     )
-    return [to_dict(doc) for doc in docs]
+    teams = [to_dict(doc) for doc in docs]
+    for team in teams:
+        team.setdefault("active", True)
+    return teams
 
 
 def _name_taken(name: str, except_id: str | None = None) -> bool:
@@ -35,7 +38,7 @@ def create_team(
     if _name_taken(name):
         return None, "Já existe uma equipe com esse nome.", 409
 
-    payload = {"name": name, "created_by": actor_id, "created_at": utc_now()}
+    payload = {"name": name, "active": True, "created_by": actor_id, "created_at": utc_now()}
     try:
         _, ref = get_db().collection("teams").add(payload)
     except Exception as exc:
@@ -73,6 +76,30 @@ def rename_team(
         resource_type="team",
         resource_id=team_id,
         details={"from": old_name, "to": name},
+        ip_address=ip,
+    )
+    return to_dict(existing.reference.get()), None, 200
+
+
+def set_team_active(
+    *, team_id: str, active: bool, actor_id: str, ip: str | None
+) -> tuple[dict[str, Any] | None, str | None, int]:
+    existing = get_doc("teams", team_id)
+    if not existing:
+        return None, "Equipe não encontrada.", 404
+    if type(active) is not bool:
+        return None, "active precisa ser true ou false.", 400
+    old_active = existing.get("active", True) is not False
+    if old_active == active:
+        return to_dict(existing), None, 200
+
+    existing.reference.update({"active": active, "updated_at": utc_now()})
+    audit_service.log_action(
+        actor_id=actor_id,
+        action="team_activated" if active else "team_deactivated",
+        resource_type="team",
+        resource_id=team_id,
+        details={"name": existing.get("name"), "active": active},
         ip_address=ip,
     )
     return to_dict(existing.reference.get()), None, 200
